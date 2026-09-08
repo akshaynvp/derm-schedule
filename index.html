@@ -404,7 +404,7 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
       <p id="pgSubtitle">Jul–Oct · Team 1 · ACC — upload each month's .xlsx to validate staffing.</p>
     </div>
     <div style="text-align:right;flex-shrink:0">
-      <div class="ver-badge"><span class="ver-num">v4.030</span>A. Pulavarty &nbsp;·&nbsp; NYU Dermatology 2026</div>
+      <div class="ver-badge"><span class="ver-num">v4.032</span>A. Pulavarty &nbsp;·&nbsp; NYU Dermatology 2026</div>
 
       <button class="cl-btn" onclick="clOpen()">&#9998; Change Log</button>
     </div>
@@ -635,7 +635,7 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
 
 <script>
 // ── App version + Change Log ──────────────────────────────────────────────────
-const APP_VERSION = 'v4.030';
+const APP_VERSION = 'v4.032';
 const CHANGELOG = [
   { ver:'v4.001', date:'Jul 6', area:'Baseline',         tags:[],
     items:['Initial versioned save. Working file at the start of the suffix convention.'] },
@@ -783,6 +783,16 @@ const CHANGELOG = [
       'CC — This Month panel now uses site roster instead of team-number filter — all site residents (e.g. all 9 BV residents) appear regardless of which team\'s schedule is loaded. Fixes missing residents like Fay.',
       'norm() now maps "Main/Con" and "Main/Contact" → Main, counting dual Main+Contact sessions toward the Main total.',
     ]},
+  { ver:'v4.032', date:'Sep 8', area:'ACC Thu AM — SSurg added', tags:['rule'],
+    notes:[
+      'Senior surgery (SSurg) added as a fixed, default-ON slot for ACC Thursday AM, reflecting Karen/Hale moving from VA to ACC.',
+      'Thu AM tmin raised from 3 → 4. SSurg appears in the Cancellations panel as a toggleable checkbox and is counted in the Clinic Distribution table under the SSurg column.',
+      'VA Karen/Hale config left unchanged.',
+    ]},
+  { ver:'v4.031', date:'Sep 4', area:'Download filename format', tags:['feat'],
+    notes:[
+      'Monthly schedule downloads now named {SITE}_{Mon}.xlsx — e.g. "ACC_Aug.xlsx", "BV_Sep.xlsx", "VA_Jul.xlsx" — instead of the generic "schedule_{month}.xlsx".',
+    ]},
   { ver:'v4.030', date:'Sep 4', area:'BV-Main case-insensitive + distribution tab', tags:['fix'],
     notes:[
       'norm() BV/VA-Main detection switched from exact-string list to case-insensitive regex (/^BV[\\s\\-]*(Main|Mn|MN)$/i), catching "bv - main", "bv-main", "BVMain", and all capitalisation variants.',
@@ -857,7 +867,7 @@ const SITE_CONFIG = {
       Tue_PM: { tmin:4, tmax:4, fixed:{Peds:3,PLS:1}, noMain:true },
       Wed_AM: { tmin:4, tmax:4, fixed:{Oncoderm:1,'Main/Con':1}, mainMin:3 },
       Wed_PM: { tmin:5, tmax:5, fixed:{PPAC:2,Oncoderm:1}, mainMin:2 },
-      Thu_AM: { tmin:3, tmax:null, fixed:{Surg:1}, toggleOff:{FGP_Lee:1}, mainMin:2 },
+      Thu_AM: { tmin:4, tmax:null, fixed:{Surg:1,SSurg:1}, toggleOff:{FGP_Lee:1}, mainMin:2 },
       Thu_PM: { tmin:4, tmax:null, fixed:{CT_Caplan:2,CT_Mazori:2}, noMain:true },
       Fri_AM: { tmin:5, tmax:5, fixed:{Contact:1,Photo:1}, mainMin:3 },
     },
@@ -4847,7 +4857,9 @@ function downloadEditedSchedule() {
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, G_activeMonth || 'Schedule');
-  XLSX.writeFile(wb, `schedule_${G_activeMonth || 'edited'}.xlsx`, { cellStyles: true });
+  const _site  = G_activeSite  || 'Schedule';
+  const _month = G_activeMonth || 'edited';
+  XLSX.writeFile(wb, `${_site}_${_month}.xlsx`, { cellStyles: true });
 }
 
 // ── Print / PDF export ────────────────────────────────────────────────────────
