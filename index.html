@@ -404,7 +404,7 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
       <p id="pgSubtitle">Jul–Oct · Team 1 · ACC — upload each month's .xlsx to validate staffing.</p>
     </div>
     <div style="text-align:right;flex-shrink:0">
-      <div class="ver-badge"><span class="ver-num">v4.034</span>A. Pulavarty &nbsp;·&nbsp; NYU Dermatology 2026</div>
+      <div class="ver-badge"><span class="ver-num">v4.035</span>A. Pulavarty &nbsp;·&nbsp; NYU Dermatology 2026</div>
 
       <button class="cl-btn" onclick="clOpen()">&#9998; Change Log</button>
     </div>
@@ -635,7 +635,7 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
 
 <script>
 // ── App version + Change Log ──────────────────────────────────────────────────
-const APP_VERSION = 'v4.034';
+const APP_VERSION = 'v4.035';
 const CHANGELOG = [
   { ver:'v4.001', date:'Jul 6', area:'Baseline',         tags:[],
     items:['Initial versioned save. Working file at the start of the suffix convention.'] },
@@ -783,17 +783,22 @@ const CHANGELOG = [
       'CC — This Month panel now uses site roster instead of team-number filter — all site residents (e.g. all 9 BV residents) appear regardless of which team\'s schedule is loaded. Fixes missing residents like Fay.',
       'norm() now maps "Main/Con" and "Main/Contact" → Main, counting dual Main+Contact sessions toward the Main total.',
     ]},
+  { ver:'v4.035', date:'Sep 15', area:'ACC Thursday — clinic renames', tags:['rule'],
+    notes:[
+      'Renamed clinic key HS → Gomez and TEMP → Washburn throughout: SITE_CONFIG.REQ, CLINIC_LABEL, CLINIC_SLOTS, cellColor(), and cs().',
+      'Coloring unchanged: both Gomez and Washburn retain Oncoderm purple (#9f7aea editor / #c7d2fe print).',
+    ]},
   { ver:'v4.034', date:'Sep 15', area:'ACC Thursday — SSurg restored + audit', tags:['rule','fix'],
     notes:[
-      'SSurg restored to ACC Thu AM fixed slots: now Surg×1 + SSurg×1 + HS×1 + TEMP×1 + mainMin:1 (tmin:5). FGP_Lee retained as toggleOff.',
-      'Full compliance audit confirmed: CLINIC_LABEL, CLINIC_SLOTS, norm(), cellColor(), cs(), checkSession(), and buildClinicTracker() all correctly handle HS, TEMP, SSurg for Thu AM/PM.',
-      'HS and TEMP appear in specialtyCols of Clinic Distribution; SSurg in surgCols. All three appear as toggleable checkboxes in the Cancellations panel.',
+      'SSurg restored to ACC Thu AM fixed slots: now Surg×1 + SSurg×1 + Gomez×1 + Washburn×1 + mainMin:1 (tmin:5). FGP_Lee retained as toggleOff.',
+      'Full compliance audit confirmed: CLINIC_LABEL, CLINIC_SLOTS, norm(), cellColor(), cs(), checkSession(), and buildClinicTracker() all correctly handle Gomez, Washburn, SSurg for Thu AM/PM.',
+      'Gomez and Washburn appear in specialtyCols of Clinic Distribution; SSurg in surgCols. All three appear as toggleable checkboxes in the Cancellations panel.',
     ]},
-  { ver:'v4.033', date:'Sep 15', area:'ACC Thursday — HS, TEMP clinics', tags:['rule','feat'],
+  { ver:'v4.033', date:'Sep 15', area:'ACC Thursday — Gomez, Washburn clinics', tags:['rule','feat'],
     notes:[
-      'ACC Thu AM revised: fixed slots Surg×1 + HS×1 + TEMP×1 + mainMin:1 (tmin:4). FGP_Lee retained as toggleOff.',
-      'ACC Thu PM revised: TEMP×1 added alongside CT1×2 + CT2×2 (tmin raised 4→5, tmax open).',
-      'New clinics HS and TEMP added to CLINIC_LABEL, CLINIC_SLOTS, cellColor(), and cs() with Oncoderm purple coloring (#9f7aea / #c7d2fe).',
+      'ACC Thu AM revised: fixed slots Surg×1 + Gomez×1 + Washburn×1 + mainMin:1 (tmin:4). FGP_Lee retained as toggleOff.',
+      'ACC Thu PM revised: Washburn×1 added alongside CT1×2 + CT2×2 (tmin raised 4→5, tmax open).',
+      'New clinics Gomez and Washburn added to CLINIC_LABEL, CLINIC_SLOTS, cellColor(), and cs() with Oncoderm purple coloring (#9f7aea / #c7d2fe).',
     ]},
   { ver:'v4.032', date:'Sep 8', area:'ACC Thu AM — SSurg added', tags:['rule'],
     notes:[
@@ -879,8 +884,8 @@ const SITE_CONFIG = {
       Tue_PM: { tmin:4, tmax:4, fixed:{Peds:3,PLS:1}, noMain:true },
       Wed_AM: { tmin:4, tmax:4, fixed:{Oncoderm:1,'Main/Con':1}, mainMin:3 },
       Wed_PM: { tmin:5, tmax:5, fixed:{PPAC:2,Oncoderm:1}, mainMin:2 },
-      Thu_AM: { tmin:5, tmax:null, fixed:{Surg:1,SSurg:1,HS:1,TEMP:1}, toggleOff:{FGP_Lee:1}, mainMin:1 },
-      Thu_PM: { tmin:5, tmax:null, fixed:{CT_Caplan:2,CT_Mazori:2,TEMP:1}, noMain:true },
+      Thu_AM: { tmin:5, tmax:null, fixed:{Surg:1,SSurg:1,Gomez:1,Washburn:1}, toggleOff:{FGP_Lee:1}, mainMin:1 },
+      Thu_PM: { tmin:5, tmax:null, fixed:{CT_Caplan:2,CT_Mazori:2,Washburn:1}, noMain:true },
       Fri_AM: { tmin:5, tmax:5, fixed:{Contact:1,Photo:1}, mainMin:3 },
     },
     SHADOW_WHEN: {
@@ -979,7 +984,7 @@ const CLINIC_LABEL = {
   Bullous:'Bullous', SSurg:'Sr. Surgery', Photo:'Photo', Oncoderm:'Oncoderm',
   Contact:'Contact', LegUlcer:'Ulcer', Lymph:'Lymph', PLS:'PLS', Peds:'Peds',
   PPAC:'PPAC', Surg:'1st Yr Surg', CT_Caplan:'CT-1', CT_Mazori:'CT-2',
-  FGP_Lee:'FGP-Lee', HS:'HS', TEMP:'TEMP',
+  FGP_Lee:'FGP-Lee', Gomez:'Gomez', Washburn:'Washburn',
   Geronemus:'Geronemus', Cohen:'Cohen', Stein:'Stein',
   Orlow:'Orlow', Flamm:'Flamm', Laser:'Laser',
   // BV
@@ -1006,7 +1011,7 @@ const CLINIC_LABEL = {
 
 const CLINIC_SLOTS = new Set([
   'Main','BVMain','Bullous','SSurg','Surg','Photo','Oncoderm','Contact','LegUlcer',
-  'Lymph','PLS','Peds','PPAC','CT_Caplan','CT_Mazori','FGP_Lee','HS','TEMP','Laser',
+  'Lymph','PLS','Peds','PPAC','CT_Caplan','CT_Mazori','FGP_Lee','Gomez','Washburn','Laser',
   'Geronemus','Orlow','Flamm','Cohen','Stein',
   'Hair','Granulomatous',
   // BV SSurg new canonical short-name keys
@@ -4382,7 +4387,7 @@ function cellColor(rawVal) {
   if (n === 'BVMain')                                return { bg:'#facc15', fg:'#000000', border:'2px solid #78350f' };
   if (raw === 'vac' || raw === 'vacation')           return { bg:'#bee3f8', fg:'#2b6cb0' };
   if (n === 'PPAC')                                  return { bg:'#fc8181', fg:'#7b341e' };
-  if (n === 'Oncoderm' || n === 'HS' || n === 'TEMP') return { bg:'#9f7aea', fg:'#ffffff' };
+  if (n === 'Oncoderm' || n === 'Gomez' || n === 'Washburn') return { bg:'#9f7aea', fg:'#ffffff' };
   if (n === 'Bullous')                               return { bg:'#9ae6b4', fg:'#1a4731' };
   if (raw.includes('consult') || n === 'Consult')    return { bg:'#bfdbfe', fg:'#1d4ed8' };
   // All Surg/SSurg variants — generic, named attendings, and renamed BV short names
@@ -4932,8 +4937,8 @@ function printSchedule() {
       Conf:       '#fcd34d', // amber          (was yellow #fde68a)
       PPAC:       '#f9a8d4', // hot pink       (was salmon #fca5a5 — same as VA-Mohs)
       Oncoderm:   '#c7d2fe', // blue-lavender  (was same as Admin)
-      HS:         '#c7d2fe', // same as Oncoderm
-      TEMP:       '#c7d2fe', // same as Oncoderm
+      Gomez:      '#c7d2fe', // same as Oncoderm
+      Washburn:   '#c7d2fe', // same as Oncoderm
       Bullous:    '#bbf7d0', // soft green
       Surg:       '#fed7aa', // peach-orange
       SSurg:      '#fed7aa', // peach-orange
