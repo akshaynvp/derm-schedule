@@ -558,7 +558,7 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
     <div class="section-head">
       <div>
         <h2>🏥 Away from Clinic</h2>
-        <p id="awaySubtitle">Residents scheduled for Path, Elective, Vacation, QI, Conference, or FGP-Mohs.</p>
+        <p id="awaySubtitle">Residents scheduled for Path, Elective, Vacation, QI, Conference, or Mohs.</p>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <div style="display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;font-size:.75rem">
@@ -635,153 +635,27 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
 
 <script>
 // ── App version + Change Log ──────────────────────────────────────────────────
-const APP_VERSION = 'v4.038';
+const APP_VERSION = 'v4.042';
 const CHANGELOG = [
-  { ver:'v4.001', date:'Jul 6', area:'Baseline',         tags:[],
-    items:['Initial versioned save. Working file at the start of the suffix convention.'] },
-  { ver:'v4.002', date:'Jul 6', area:'Print Layout',     tags:['ui'],
-    items:[
-      'Print calendar: added <code>table-layout:fixed</code>; border color #e2e8f0 → #94a3b8 for sharper grid.',
-      'Cell width changed from <code>min-width:14px</code> to <code>width:20%</code> for even column distribution.',
-      'Added explicit white background for Main and BVMain in <code>cs()</code>; removed them from the shared color map.',
+  { ver:'v4.042', date:'Sep 16', area:'VA clinic renames + FGP-Mohs merge', tags:['rule','feat'],
+    notes:[
+      'VA Tue PM: Laser-Ashinoff renamed to Laser. VA Thu PM: Laser-Schaffer renamed to Laser. Both are now the canonical Laser key; old names kept as norm() aliases for backward compat.',
+      'VA Mon AM: SSurg-Whitlow renamed to SSurg-W (fixed slot). VA Mon AM/PM: SSurg-Hazan renamed to SSurg-H (toggleOff).',
+      'FGP-Mohs fully merged into Mohs: norm() maps FGP-Mohs → Mohs, cellColor() and cs() now use Mohs color, FGP-Mohs removed from mohsCols and CLINIC_SLOTS/CLINIC_LABEL. Away tab tracks former FGP-Mohs assignments under "Mohs" category.',
+      'Changelog array sorted newest-first throughout.',
     ]},
-  { ver:'v4.003', date:'Jul 6', area:'Print Colors v1',  tags:['ui'],
-    items:[
-      'Full <code>cs()</code> revamp: all print text forced to <code>color:#000</code>; all backgrounds lightened for black-text legibility.',
-      'Consult: vivid blue → pale blue #bfdbfe. Surgery: dark orange → peach #fed7aa. Mohs/FGP-Mohs/VA-Mohs: darkened → coral/gray/lavender.',
-      'VVC, CT, Hair, Granulomatous, BullousTexHair, Vulvar: all shifted to lighter tones.',
+  { ver:'v4.041', date:'Sep 16', area:'Print fonts reverted to original sizes', tags:['ui'],
+    notes:[
+      'All print font sizes reverted to pre-v4.036 baseline: body 5.5pt, data cells 5pt, headers 4.8pt, session labels 4.5pt, day headers 7pt, page titles 8pt, footer/CC labels 4.5pt.',
+      'Container kept at 7.5in from v4.040.',
     ]},
-  { ver:'v4.004', date:'Jul 6', area:'BV-Main Color',    tags:['ui'],
-    items:[
-      '<code>cellColor()</code>: BV-Main changed from pale yellow #fefcbf → bold gold #facc15 with dark brown border to distinguish from generic Main (white).',
-      'Same gold applied in <code>cs()</code> for print.',
+  { ver:'v4.040', date:'Sep 16', area:'Print container expanded to 7.5in', tags:['ui'],
+    notes:[
+      'Print container (.page-wrap) height increased from 6.77in → 7.5in to fit FLEX rows.',
     ]},
-  { ver:'v4.005', date:'Jul 6', area:'Print — Flex Rows', tags:['feat'],
-    items:[
-      'Printed calendar: FLEX-1 and FLEX-2 rows added to both AM and PM blocks with a dashed separator row labeled FLEX.',
-      'Flex rows styled with italic gray row header; colored via <code>cs()</code> same as resident rows.',
-    ]},
-  { ver:'v4.006', date:'Jul 6', area:'Display Names + Print Colors v2', tags:['feat','ui'],
-    items:[
-      'Applied <code>resDisplay()</code> (last-name lookup) to all remaining panels: RR tracker block/month modes, admin tracker, clinic distribution, away-from-clinic, cross-month balance, and print row headers.',
-      'Print color palette v2 — broader hue spread: Consult → vivid sky blue #7dd3fc; Admin → rich lavender #c4b5fd; Conf → amber #fcd34d; PPAC → hot pink #f9a8d4; Mohs → steel blue-gray #c7d2dc; FGP-Mohs → periwinkle #a5b4fc; VVC → richer teal #5eead4; Hold → saturated red #fc8181.',
-    ]},
-  { ver:'v4.007', date:'Jul 6', area:'Schedule Editor Sort', tags:['bug'],
-    items:[
-      '<code>buildScheduleEditor()</code>: resident rows were sorted alphabetically instead of by <code>TEAM_CONFIG</code> order. Fixed to sort by defined team order; non-team residents sort after alphabetically.',
-      'Primarily affected Team 3 (VA) where alphabetical ≠ canonical order.',
-    ]},
-  { ver:'v4.008', date:'Jul 6', area:'Font Standardization', tags:['ui'],
-    items:[
-      'Added CSS rule for <code>#rrTable, #clinicTable, .balance-cross-tbl</code>: font-size .63rem to match <code>.edit-tbl</code>.',
-      'Removed explicit .78rem from RR/clinic tracker <code>&lt;th&gt;</code> elements; removed .7rem from <code>TH_BASE</code>.',
-      '12 panel tables changed from .8rem or .78rem → .63rem (admin tracker, away table, cross-month balance, and others).',
-    ]},
-  { ver:'v4.009', date:'Jul 6', area:'Away from Clinic Tab', tags:['feat','bug'],
-    items:[
-      'Added Flex as a recognized away category; cell values matching flex, flex-1, flex-2 now classified and displayed.',
-      'Away table now shows all residents from active team config even with no qualifying entries (previously only residents with entries appeared).',
-    ]},
-  { ver:'v4.010', date:'Jul 6', area:'Excel Upload Parser', tags:['bug'],
-    items:[
-      'Excel files using display names (e.g. Grullon-Perez) as column headers instead of initials (KGP) were breaking all lookups.',
-      'Added reverse-lookup map from <code>RES_DISPLAY</code>; new <code>normResName()</code> normalizes display names → initials at parse time. Both formats now work transparently.',
-    ]},
-  { ver:'v4.011', date:'Jul 6', area:'BV CC Print Panel — Order', tags:['feat'],
-    items:[
-      'Added <code>_CC_PRINT_ORDER</code> with display-name roster for BV CC panel: Pulavarty → Klein → Grullon-Perez → Fay → Shah → Nohria → Hill → Cherepakhin → Harris.',
-      'CC panel now sorts and filters by roster order.',
-    ]},
-  { ver:'v4.012', date:'Jul 6', area:'BV CC Print Panel — Filter Fix', tags:['bug'],
-    items:[
-      'Root cause: filtering by CC assignment type (BV-CC) caused Liu to appear (had Peds-CC) and Klein to be missing (no BV-CC entry).',
-      'Roster list is now authoritative for both filtering and ordering — residents outside the roster are excluded regardless of assignment type.',
-    ]},
-  { ver:'v4.013', date:'Jul 6', area:'CC Panel — All-Site Rosters', tags:['feat'],
-    items:[
-      'Replaced display-name roster with initials-based official rosters (<code>_CC_ROSTER</code>) covering all three sites.',
-      'BV: AP EK KGP CF JS AN RCH OC JH &nbsp;|&nbsp; ACC: RHS MK EM JJ ER MN YO &nbsp;|&nbsp; VA: YB LL CN EGR RT CO AA MJ.',
-      'Matching handles both initials and display-name formats in CC files for robustness.',
-    ]},
-  { ver:'v4.014', date:'Jul 7', area:'BV Clinic Renames', tags:['feat'],
-    items:[
-      'Renamed all BV SSurg-* / Surg-* clinic keys to short attending names across <code>norm()</code>, <code>CLINIC_LABEL</code>, <code>CLINIC_SLOTS</code>, compliance rules, <code>cellColor()</code>, and <code>cs()</code>.',
-      'SSurg-Anolik→Anolik, SSurg-Brauer→Brauer, SSurg-Bae→Bae, SSurg-Joe/Akintilo→JoeAkintilo (Joe and Akintilo both map here), SSurg-SOC→SOC, SSurg-Quintana→Quintana, Surg-Criscito→Surg, SSurg-Franks→Franks, SSurg-Ostad→Ostad, SSurg-Nail→Nail.',
-      'Old SSurg-* keys kept as aliases in <code>norm()</code> for backward compat with existing schedule files.',
-      'Added <code>_SSURG_SHORT</code> set in <code>cellColor()</code> and <code>cs()</code> so new short names retain orange/peach surgery color.',
-    ]},
-  { ver:'v4.015', date:'Jul 7', area:'Main Clinic Minimums', tags:['rule','bug'],
-    items:[
-      'Compliance checker had hardcoded <code>Math.min(3,…)</code> cap — Main minimum could never exceed 3. Replaced at all 5 checker occurrences with <code>req.mainMin</code>-aware logic.',
-      'Added <code>mainMin</code> field to VA sessions: Mon AM (4), Mon PM (4), Tue PM (3), Wed AM (4), Wed PM (3), Thu AM (4), Thu PM (4). tmin raised 5→6 for Mon AM and Thu PM to provide enough slots.',
-      'Added <code>mainMin:1</code> to ACC Mon AM; tmin raised 5→6 to ensure room for 1 Main alongside 5 fixed specialty slots.',
-    ]},
-  { ver:'v4.016', date:'Jul 7', area:'Version Header + Change Log', tags:['feat','ui'],
-    items:[
-      'Added version number (v4.016), attribution (A. Pulavarty · NYU Dermatology 2026), and Change Log button to the top-right of the page header.',
-      'Embedded <code>CHANGELOG</code> array in the file itself; changelog modal renders from this data and will be updated with each future versioned edit.',
-    ]},
-  { ver:'v4.017', date:'Jul 8', area:'ACC Rules + Main Refactor', tags:['rule','feat','ui'],
-    items:[
-      'Refactored Main checker to standalone in all 5 checker panels: mainReq = mainMin directly, no longer derived from tmin minus specialty counts.',
-      'ACC Mon PM: removed Contact clinic, tmin/tmax 4→3, mainMin:3.',
-      'ACC Tue AM: added mainMin:2.',
-      'ACC Wed AM: removed Contact clinic, tmin/tmax 5→4, mainMin:3.',
-      'ACC Wed PM: removed PLS clinic (incorrect), mainMin:2.',
-      'ACC Thu AM: Surg and FGP-Lee now independent (grouped constraint removed); tmin 5→3; mainMin:2.',
-      'ACC Fri AM: added mainMin:3.',
-      'Added Rules popup button (ⓘ) in header — shows per-site, per-session compliance requirements.',
-    ]},
-  { ver:'v4.018', date:'Jul 8', area:'Cancellations UI', tags:['ui'],
-    items:[
-      'Reorganized Clinic Cancellations panel: grouped by day-of-week (Monday AM, Monday PM, ...) instead of chronologically by date.',
-      'All instances of a given session (e.g. all Monday AMs) now appear aligned in one row, with date cards across.',
-      'Sessions with no specialty clinics to toggle display a greyed-out "No Specialty Clinics" badge.',
-    ]},
-  { ver:'v4.019', date:'Jul 8', area:'Cancellations UI', tags:['ui'],
-    items:[
-      'Redesigned Clinic Cancellations as a column-aligned CSS grid: one column per day-session (Mon AM, Mon PM, Tue AM …), one row per week.',
-      'All instances of a session (e.g. all Monday AMs) now stack vertically in the same column; AM and PM for the same day are adjacent columns.',
-      'Week labels span the full grid width as dividers. Empty cells shown for days that do not occur in a given week.',
-      'No Specialty Clinics badge retained for sessions with nothing to toggle.',
-    ]},
-  { ver:'v4.020', date:'Jul 8', area:'Cancellations UI', tags:['ui'],
-    items:[
-      'Reduced vertical footprint of Clinic Cancellations grid: tighter padding, smaller font sizes, reduced gaps throughout.',
-    ]},
-  { ver:'v4.021', date:'Jul 8', area:'BV & VA Rules', tags:['rules'],
-    items:[
-      'BV: Added mainMin to all sessions (Mon–Fri AM/PM). Mon AM: Hair/Anolik/Quintana moved from fixed/weeklyFixed to toggleOff. Wed AM: Lymph moved from weeklyFixed to toggleOff; exclusiveOpt for Ostad/Franks removed. Thu AM: Surg (Criscito) moved from weeklyFixed to fixed; Nail moved from weeklyFixed to toggleOff. Thu PM: mainMin set to 2.',
-      'VA: Mon AM mainMin 4→3, tmin 6→5, tmax 7→6. Thu AM tmin 5→4. Thu PM mainMin 4→3, tmin 6→5, tmax 6→5.',
-    ]},
-  { ver:'v4.023', date:'Jul 8', area:'UI', tags:['ui','bug'],
-    items:[
-      'Fixed Rules modal — removed conflicting inline styles; now uses same CSS class-toggle pattern as the Change Log modal (display:flex overlay, centered scroll box).',
-      'FLEX-1/FLEX-2 row label font reduced from .82rem to .63rem to match editor table.',
-      'Removed RR over-limit banner popup.',
-    ]},
-  { ver:'v4.023', date:'Jul 8', area:'Clinic Distribution', tags:['feat'],
-    items:[
-      'Added Path column to Clinic Distribution table, positioned after PM RR. Path assignments are now tracked per resident with a green heatmap.',
-    ]},
-  { ver:'v4.024', date:'Jul 9', area:'Clinic Distribution', tags:['feat'],
-    items:[
-      'Added Laser Total column (sum of all Laser clinic variants) placed immediately after Surg Total.',
-      'Added Mohs Total column (sum of VA-Mohs, Mohs, Mohs-Assist, FGP-Mohs) placed immediately after Laser Total.',
-      'Moved VVC column to sit next to Main (before M/MC) instead of at the far right.',
-      'Laser cluster now appears before Mohs cluster in column order to align with the Laser/Mohs Total adjacency.',
-      'Added Total RR column (AM RR + PM RR) after PM RR.',
-      'Added RR-B column tracking Backup RR assignments separately; RR-B still counts toward standard AM/PM RR totals.',
-    ]},
-  { ver:'v4.025', date:'Jul 9', area:'CC Parser', tags:['bug'],
-    items:[
-      '_ccToISO now handles ISO date strings (YYYY-MM-DD) in addition to Excel serial numbers. The residency tracker exports dates as text; previously all dates returned null and the upload silently overwrote the cache with empty data.',
-      'Academic-year fix: after parsing, any Jan–Jun date in the same year as the first Friday (e.g. 2026-01-08 in a Jul-2026 schedule) is bumped to the following year (2027-01-08). Corrects a year-label bug in the source tracker export.',
-    ]},
-  { ver:'v4.026', date:'Jul 9', area:'CC / Parser', tags:['bug','feat'],
-    items:[
-      'CC — This Month panel now uses site roster instead of team-number filter — all site residents (e.g. all 9 BV residents) appear regardless of which team\'s schedule is loaded. Fixes missing residents like Fay.',
-      'norm() now maps "Main/Con" and "Main/Contact" → Main, counting dual Main+Contact sessions toward the Main total.',
+  { ver:'v4.039', date:'Sep 16', area:'Print container +8% (6.77in)', tags:['ui'],
+    notes:[
+      'Print container (.page-wrap) height increased 6.27in → 6.77in (+8%) to show additional rows.',
     ]},
   { ver:'v4.038', date:'Sep 16', area:'Print font sizes — conservative scale', tags:['ui'],
     notes:[
@@ -843,12 +717,141 @@ const CHANGELOG = [
       'Fix: in checkSession(), fixed-clinic keys that norm() remaps (e.g. Main/Con → Main) are now counted directly from raw assignment values instead of the normed ct map.',
     ]},
   { ver:'v4.027', date:'Sep 4', area:'ACC Rules + Main/Con', tags:['rule','feat'],
-    items:[
+    notes:[
       'ACC Mon PM: added fixed Main/Con slot (1 of 3 Main residents is now a dual Main+Contact). mainMin:3 unchanged — cancelling Main/Con reverts that slot to a plain Main.',
       'ACC Wed AM: added fixed Main/Con slot (1 of 3 Main residents). mainMin:3 unchanged.',
       'Main/Con displays with Contact\'s teal color (bg:#76e4f7) in both the schedule editor and clinic distribution table.',
       'norm() generalized: any "{initials}-Main" or "{initials} - Main" value (e.g. ER-Main, CN-Main) now maps to Main, so Flex-row resident aliases count toward session Main totals.',
     ]},
+  { ver:'v4.026', date:'Jul 9', area:'CC / Parser', tags:['bug','feat'],
+    notes:[
+      'CC — This Month panel now uses site roster instead of team-number filter — all site residents (e.g. all 9 BV residents) appear regardless of which team\'s schedule is loaded. Fixes missing residents like Fay.',
+      'norm() now maps "Main/Con" and "Main/Contact" → Main, counting dual Main+Contact sessions toward the Main total.',
+    ]},
+  { ver:'v4.025', date:'Jul 9', area:'CC Parser', tags:['bug'],
+    notes:[
+      '_ccToISO now handles ISO date strings (YYYY-MM-DD) in addition to Excel serial numbers. The residency tracker exports dates as text; previously all dates returned null and the upload silently overwrote the cache with empty data.',
+      'Academic-year fix: after parsing, any Jan–Jun date in the same year as the first Friday (e.g. 2026-01-08 in a Jul-2026 schedule) is bumped to the following year (2027-01-08). Corrects a year-label bug in the source tracker export.',
+    ]},
+  { ver:'v4.024', date:'Jul 9', area:'Clinic Distribution', tags:['feat'],
+    notes:[
+      'Added Laser Total column (sum of all Laser clinic variants) placed immediately after Surg Total.',
+      'Added Mohs Total column (sum of VA-Mohs, Mohs, Mohs-Assist) placed immediately after Laser Total.',
+      'Moved VVC column to sit next to Main (before M/MC) instead of at the far right.',
+      'Laser cluster now appears before Mohs cluster in column order to align with the Laser/Mohs Total adjacency.',
+      'Added Total RR column (AM RR + PM RR) after PM RR.',
+      'Added RR-B column tracking Backup RR assignments separately; RR-B still counts toward standard AM/PM RR totals.',
+    ]},
+  { ver:'v4.023', date:'Jul 8', area:'UI + Clinic Distribution', tags:['ui','bug','feat'],
+    notes:[
+      'Fixed Rules modal — removed conflicting inline styles; now uses same CSS class-toggle pattern as the Change Log modal.',
+      'FLEX-1/FLEX-2 row label font reduced from .82rem to .63rem to match editor table.',
+      'Removed RR over-limit banner popup.',
+      'Added Path column to Clinic Distribution table, positioned after PM RR.',
+    ]},
+  { ver:'v4.021', date:'Jul 8', area:'BV & VA Rules', tags:['rule'],
+    notes:[
+      'BV: Added mainMin to all sessions (Mon–Fri AM/PM). Mon AM: Hair/Anolik/Quintana moved from fixed/weeklyFixed to toggleOff. Wed AM: Lymph moved from weeklyFixed to toggleOff; exclusiveOpt for Ostad/Franks removed. Thu AM: Surg (Criscito) moved from weeklyFixed to fixed; Nail moved from weeklyFixed to toggleOff. Thu PM: mainMin set to 2.',
+      'VA: Mon AM mainMin 4→3, tmin 6→5, tmax 7→6. Thu AM tmin 5→4. Thu PM mainMin 4→3, tmin 6→5, tmax 6→5.',
+    ]},
+  { ver:'v4.020', date:'Jul 8', area:'Cancellations UI', tags:['ui'],
+    notes:[
+      'Reduced vertical footprint of Clinic Cancellations grid: tighter padding, smaller font sizes, reduced gaps throughout.',
+    ]},
+  { ver:'v4.019', date:'Jul 8', area:'Cancellations UI', tags:['ui'],
+    notes:[
+      'Redesigned Clinic Cancellations as a column-aligned CSS grid: one column per day-session (Mon AM, Mon PM, Tue AM …), one row per week.',
+      'All instances of a session (e.g. all Monday AMs) now stack vertically in the same column; AM and PM for the same day are adjacent columns.',
+      'Week labels span the full grid width as dividers. Empty cells shown for days that do not occur in a given week.',
+      'No Specialty Clinics badge retained for sessions with nothing to toggle.',
+    ]},
+  { ver:'v4.018', date:'Jul 8', area:'Cancellations UI', tags:['ui'],
+    notes:[
+      'Reorganized Clinic Cancellations panel: grouped by day-of-week (Monday AM, Monday PM, ...) instead of chronologically by date.',
+      'All instances of a given session (e.g. all Monday AMs) now appear aligned in one row, with date cards across.',
+      'Sessions with no specialty clinics to toggle display a greyed-out "No Specialty Clinics" badge.',
+    ]},
+  { ver:'v4.017', date:'Jul 8', area:'ACC Rules + Main Refactor', tags:['rule','feat','ui'],
+    notes:[
+      'Refactored Main checker to standalone in all 5 checker panels: mainReq = mainMin directly, no longer derived from tmin minus specialty counts.',
+      'ACC Mon PM: removed Contact clinic, tmin/tmax 4→3, mainMin:3. ACC Tue AM: added mainMin:2. ACC Wed AM: removed Contact clinic, tmin/tmax 5→4, mainMin:3. ACC Wed PM: removed PLS clinic (incorrect), mainMin:2. ACC Thu AM: Surg and FGP-Lee now independent; tmin 5→3; mainMin:2. ACC Fri AM: added mainMin:3.',
+      'Added Rules popup button (ⓘ) in header — shows per-site, per-session compliance requirements.',
+    ]},
+  { ver:'v4.016', date:'Jul 7', area:'Version Header + Change Log', tags:['feat','ui'],
+    notes:[
+      'Added version number, attribution (A. Pulavarty · NYU Dermatology 2026), and Change Log button to the top-right of the page header.',
+      'Embedded CHANGELOG array in the file itself; modal renders from this data.',
+    ]},
+  { ver:'v4.015', date:'Jul 7', area:'Main Clinic Minimums', tags:['rule','bug'],
+    notes:[
+      'Compliance checker had hardcoded Math.min(3,…) cap — Main minimum could never exceed 3. Replaced at all 5 checker occurrences with req.mainMin-aware logic.',
+      'Added mainMin field to VA sessions: Mon AM (4), Mon PM (4), Tue PM (3), Wed AM (4), Wed PM (3), Thu AM (4), Thu PM (4). Added mainMin:1 to ACC Mon AM.',
+    ]},
+  { ver:'v4.014', date:'Jul 7', area:'BV Clinic Renames', tags:['feat'],
+    notes:[
+      'Renamed all BV SSurg-* / Surg-* clinic keys to short attending names across norm(), CLINIC_LABEL, CLINIC_SLOTS, compliance rules, cellColor(), and cs().',
+      'SSurg-Anolik→Anolik, SSurg-Brauer→Brauer, SSurg-Bae→Bae, SSurg-Joe/Akintilo→JoeAkintilo, SSurg-SOC→SOC, SSurg-Quintana→Quintana, Surg-Criscito→Surg, SSurg-Franks→Franks, SSurg-Ostad→Ostad, SSurg-Nail→Nail. Old keys kept as norm() aliases.',
+    ]},
+  { ver:'v4.013', date:'Jul 6', area:'CC Panel — All-Site Rosters', tags:['feat'],
+    notes:[
+      'Replaced display-name roster with initials-based official rosters (_CC_ROSTER) covering all three sites.',
+      'BV: AP EK KGP CF JS AN RCH OC JH | ACC: RHS MK EM JJ ER MN YO | VA: YB LL CN EGR RT CO AA MJ.',
+    ]},
+  { ver:'v4.012', date:'Jul 6', area:'BV CC Print Panel — Filter Fix', tags:['bug'],
+    notes:[
+      'Root cause: filtering by CC assignment type (BV-CC) caused Liu to appear and Klein to be missing.',
+      'Roster list is now authoritative for both filtering and ordering.',
+    ]},
+  { ver:'v4.011', date:'Jul 6', area:'BV CC Print Panel — Order', tags:['feat'],
+    notes:[
+      'Added _CC_PRINT_ORDER with display-name roster for BV CC panel.',
+      'CC panel now sorts and filters by roster order.',
+    ]},
+  { ver:'v4.010', date:'Jul 6', area:'Excel Upload Parser', tags:['bug'],
+    notes:[
+      'Excel files using display names as column headers instead of initials were breaking all lookups.',
+      'Added reverse-lookup map from RES_DISPLAY; new normResName() normalizes display names → initials at parse time.',
+    ]},
+  { ver:'v4.009', date:'Jul 6', area:'Away from Clinic Tab', tags:['feat','bug'],
+    notes:[
+      'Added Flex as a recognized away category.',
+      'Away table now shows all residents from active team config even with no qualifying entries.',
+    ]},
+  { ver:'v4.008', date:'Jul 6', area:'Font Standardization', tags:['ui'],
+    notes:[
+      'Added CSS rule for #rrTable, #clinicTable, .balance-cross-tbl: font-size .63rem to match .edit-tbl.',
+      '12 panel tables changed from .8rem or .78rem → .63rem.',
+    ]},
+  { ver:'v4.007', date:'Jul 6', area:'Schedule Editor Sort', tags:['bug'],
+    notes:[
+      'buildScheduleEditor(): resident rows were sorted alphabetically instead of by TEAM_CONFIG order. Fixed to sort by defined team order.',
+    ]},
+  { ver:'v4.006', date:'Jul 6', area:'Display Names + Print Colors v2', tags:['feat','ui'],
+    notes:[
+      'Applied resDisplay() (last-name lookup) to all remaining panels.',
+      'Print color palette v2 — broader hue spread: Consult → vivid sky blue; Admin → rich lavender; Conf → amber; PPAC → hot pink; Mohs → steel blue-gray; VVC → richer teal.',
+    ]},
+  { ver:'v4.005', date:'Jul 6', area:'Print — Flex Rows', tags:['feat'],
+    notes:[
+      'Printed calendar: FLEX-1 and FLEX-2 rows added to both AM and PM blocks with a dashed separator row labeled FLEX.',
+    ]},
+  { ver:'v4.004', date:'Jul 6', area:'BV-Main Color', tags:['ui'],
+    notes:[
+      'cellColor(): BV-Main changed from pale yellow #fefcbf → bold gold #facc15 with dark brown border.',
+      'Same gold applied in cs() for print.',
+    ]},
+  { ver:'v4.003', date:'Jul 6', area:'Print Colors v1', tags:['ui'],
+    notes:[
+      'Full cs() revamp: all print text forced to color:#000; all backgrounds lightened for black-text legibility.',
+      'Consult: vivid blue → pale blue #bfdbfe. Surgery: dark orange → peach #fed7aa. VVC, CT, Hair, Granulomatous, BullousTexHair, Vulvar: all shifted to lighter tones.',
+    ]},
+  { ver:'v4.002', date:'Jul 6', area:'Print Layout', tags:['ui'],
+    notes:[
+      'Print calendar: added table-layout:fixed; border color #e2e8f0 → #94a3b8 for sharper grid.',
+      'Cell width changed from min-width:14px to width:20% for even column distribution.',
+    ]},
+  { ver:'v4.001', date:'Jul 6', area:'Baseline', tags:[],
+    notes:['Initial versioned save. Working file at the start of the suffix convention.'] },
 ];
 
 function clOpen() {
@@ -933,18 +936,18 @@ const SITE_CONFIG = {
   VA: {
     hasShadow: false,
     REQ: {
-      Mon_AM: { tmin:5, tmax:6, fixed:{VVC:1,'SSurg-Whitlow':1}, mainMin:3,
-                toggleOff:{'SSurg-Hazan':1} },
+      Mon_AM: { tmin:5, tmax:6, fixed:{VVC:1,'SSurg-W':1}, mainMin:3,
+                toggleOff:{'SSurg-H':1} },
       Mon_PM: { tmin:4, tmax:5, fixed:{}, mainMin:4,
-                toggleOff:{'SSurg-Hazan':1} },
+                toggleOff:{'SSurg-H':1} },
       Tue_AM: { tmin:3, tmax:3, fixed:{Surg:3}, noMain:true },
-      Tue_PM: { tmin:5, tmax:5, fixed:{'Laser-Ashinoff':1,'SSurg-Lee':1}, mainMin:3 },
+      Tue_PM: { tmin:5, tmax:5, fixed:{Laser:1,'SSurg-Lee':1}, mainMin:3 },
       Wed_AM: { tmin:6, tmax:7, fixed:{'VA-Mohs':2}, mainMin:4 },
       Wed_PM: { tmin:5, tmax:6, fixed:{'VA-Mohs':2}, mainMin:3 },
       Thu_AM: { tmin:4, tmax:6, fixed:{}, mainMin:4,
                 toggleOff:{'SSurg-Hale':1,'SSurg-Karen':1},
                 exclusiveOpt:[['SSurg-Hale','SSurg-Karen']] },
-      Thu_PM: { tmin:5, tmax:5, fixed:{VVC:1,'Laser-Schaffer':1}, mainMin:3 },
+      Thu_PM: { tmin:5, tmax:5, fixed:{VVC:1,Laser:1}, mainMin:3 },
       Fri_AM: { tmin:3, tmax:3, fixed:{LegUlcer:3}, noMain:true },
     },
     SHADOW_WHEN: {},
@@ -1016,11 +1019,11 @@ const CLINIC_LABEL = {
   Mohs:'Mohs', 'Mohs-Assist':'Mohs Assist', Ulcer:'Ulcer',
   'M/MC':'M/MC',
   // VA
-  VVC:'VVC', 'SSurg-Whitlow':'SSurg-Whitlow', 'SSurg-Hazan':'SSurg-Hazan',
-  'Laser-Ashinoff':'Laser-Ashinoff', 'SSurg-Hale':'SSurg-Hale',
-  'SSurg-Karen':'SSurg-Karen', 'Laser-Schaffer':'Laser-Schaffer',
+  VVC:'VVC', 'SSurg-W':'SSurg-W', 'SSurg-H':'SSurg-H',
+  'SSurg-Hale':'SSurg-Hale',
+  'SSurg-Karen':'SSurg-Karen',
   'SSurg-Lee':'SSurg-Lee',
-  'VA-Mohs':'VA-Mohs', 'FGP-Mohs':'FGP-Mohs',
+  'VA-Mohs':'VA-Mohs',
   'VA-Laser':'VA-Laser',
 };
 
@@ -1035,8 +1038,8 @@ const CLINIC_SLOTS = new Set([
   'SSurg-Brauer','SSurg-Bae','SSurg-Anolik','SSurg-Quintana',
   'BullousTexHair','SSurg-JoeAkintilo','Vulvar','CT',
   'SSurg-Nail','SRV','SSurg-SOC','Mohs','Mohs-Assist','SSurg-Ostad','SSurg-Franks','Ulcer','M/MC',
-  'VVC','SSurg-Whitlow','SSurg-Hazan','Laser-Ashinoff','SSurg-Hale','SSurg-Karen','Laser-Schaffer',
-  'SSurg-Lee','VA-Mohs','FGP-Mohs','VA-Laser',
+  'VVC','SSurg-W','SSurg-H','SSurg-Hale','SSurg-Karen',
+  'SSurg-Lee','VA-Mohs','VA-Laser',
 ]);
 const NOTABLE_ABSENT = new Set(['Vac','Exam','Path','Mohs','QI','Conf','Laser','Flamm']);
 
@@ -1507,9 +1510,12 @@ function norm(v) {
   if (['FGP-Lee','FGP','FGP_Lee'].includes(v)) return 'FGP_Lee';
   if (v === 'Cohen') return 'Cohen';
   if (v === 'Stein') return 'Stein';
-  if (['Laser','Laser Surg','Laser Surgery','laser'].includes(v)) return 'Laser';
+  if (['Laser','Laser Surg','Laser Surgery','laser','Laser-Ashinoff','Laser-Schaffer'].includes(v)) return 'Laser';
   if (['VA-Laser','VA Laser','VALaser'].includes(v)) return 'VA-Laser';
   if (['VA-Mohs','VA Mohs','VAMohs'].includes(v)) return 'VA-Mohs';
+  if (v === 'FGP-Mohs') return 'Mohs';
+  if (v === 'SSurg-Whitlow') return 'SSurg-W';
+  if (v === 'SSurg-Hazan')   return 'SSurg-H';
   if (['Conf','Conference','conf','conference'].includes(v)) return 'Conf';
   if (['Elective','elective'].includes(v)) return 'Elective';
   return v;
@@ -2797,7 +2803,7 @@ const AWAY_CATS = {
   QI:         { label:'QI',         bg:'#2d3748', fg:'#ffffff' },
   Conf:       { label:'Conference', bg:'#fbd38d', fg:'#744210' },
   Exam:       { label:'Exam',       bg:'#fed7d7', fg:'#c53030' },
-  'FGP-Mohs': { label:'FGP-Mohs',  bg:'#d6bcfa', fg:'#44337a' },
+  Mohs:       { label:'Mohs',       bg:'#e2e8f0', fg:'#2d3748' },
   Consult:    { label:'Consult',    bg:'#667eea', fg:'#ffffff' },
   Flex:       { label:'Flex',       bg:'#c6f6d5', fg:'#276749' },
   Sick:       { label:'Sick',       bg:'#e53e3e', fg:'#ffffff' },
@@ -2831,7 +2837,7 @@ function collectAwayFromSchedule(sched, awayMap, monthLabel) {
         else if (raw === 'qi')                           cat = 'QI';
         else if (raw === 'conf' || raw === 'conference') cat = 'Conf';
         else if (raw === 'exam')                         cat = 'Exam';
-        else if (norm(String(v || '')) === 'FGP-Mohs')  cat = 'FGP-Mohs';
+        else if (String(v || '').trim() === 'FGP-Mohs')  cat = 'Mohs';
         else if (raw.includes('consult') || norm(String(v || '')) === 'Consult') cat = 'Consult';
         else if (raw === 'flex' || raw === 'flex-1' || raw === 'flex-2') cat = 'Flex';
         else if (raw === 'sick')                         cat = 'Sick';
@@ -2857,7 +2863,7 @@ function buildPathList() {
   // ── Month mode: just current G_schedule ───────────────────────────────────
   if (!blockMode) {
     if (subtitle) subtitle.textContent =
-      'Residents scheduled for Path, Elective, Vacation, QI, Conference, Exam, or FGP-Mohs — current month.';
+      'Residents scheduled for Path, Elective, Vacation, QI, Conference, Exam, or Mohs — current month.';
     if (!G_schedule) {
       el.innerHTML = '<p style="color:var(--muted)">No schedule loaded.</p>'; return;
     }
@@ -4079,7 +4085,7 @@ function buildClinicTracker() {
 
   // ── Column ordering ───────────────────────────────────────────────────────────
   // Main → BVMain → VVC → LegUlcer → other specialty A-Z → CT cluster →
-  // Surg/SSurg cluster → Laser cluster → Mohs cluster → FGP-Mohs → Shadow
+  // Surg/SSurg cluster → Laser cluster → Mohs cluster → Shadow
   const SHADOW       = ['Geronemus','Flamm','Orlow','Cohen','Stein'];
   const shadowSet    = new Set(SHADOW);
 
@@ -4160,11 +4166,11 @@ function buildClinicTracker() {
 
   // ── 4. M/MC sits immediately right of Main; rest of Mohs cluster after surgical ─
   const mmcCols  = ['M/MC'].filter(c => clinicSet.has(c));
-  const mohsCols = ['VA-Mohs','Mohs','Mohs-Assist','FGP-Mohs'].filter(c => clinicSet.has(c));
+  const mohsCols = ['VA-Mohs','Mohs','Mohs-Assist'].filter(c => clinicSet.has(c));
 
-  // ── 5. Laser — VA-Laser / Laser / Laser-Ashinoff / Laser-Schaffer ────────────
+  // ── 5. Laser — VA-Laser / Laser ────────────
   const laserCols = all
-    .filter(c => c === 'Laser' || c === 'VA-Laser' || c.startsWith('Laser-'))
+    .filter(c => c === 'Laser' || c === 'VA-Laser')
     .sort((a,b) => {
       if (a === 'VA-Laser') return -1; if (b === 'VA-Laser') return 1;
       if (a === 'Laser')    return -1; if (b === 'Laser')    return 1;
@@ -4411,9 +4417,8 @@ function cellColor(rawVal) {
       (n && (n.startsWith('Surg-') || n.startsWith('SSurg-'))) ||
       _SSURG_SHORT.has(n))
                                                      return { bg:'#f6ad55', fg:'#7b341e' };
-  // Mohs: VA-Mohs (template-checked) vs FGP-Mohs (free assignment, different color)
+  // Mohs variants
   if (n === 'VA-Mohs' || n === 'Mohs-Assist')       return { bg:'#fc8181', fg:'#7b341e' };
-  if (n === 'FGP-Mohs')                             return { bg:'#d6bcfa', fg:'#44337a' };
   if (n === 'Mohs')                                  return { bg:'#e2e8f0', fg:'#2d3748' };
   if (n === 'M/MC')                                  return { bg:'#fbb6ce', fg:'#702459' }; // Main+Mohs Consult hybrid
   // BV/VA specialty clinics
@@ -4424,7 +4429,7 @@ function cellColor(rawVal) {
   if (n === 'Granulomatous')                         return { bg:'#c05621', fg:'#ffffff' };
   if (n === 'BullousTexHair')                        return { bg:'#9ae6b4', fg:'#1a4731' };
   if (n === 'Vulvar')                                return { bg:'#d53f8c', fg:'#ffffff' };
-  if (n === 'Laser-Ashinoff' || n === 'Laser-Schaffer' || n === 'VA-Laser') return { bg:'#bee3f8', fg:'#2c5282' };
+  if (n === 'VA-Laser') return { bg:'#bee3f8', fg:'#2c5282' };
   if (n === 'Peds')                                  return { bg:'#fbb6ce', fg:'#702459' };
   if (n === 'PLS')                                   return { bg:'#9c4221', fg:'#ffffff' };
   if (raw === 'exam')                                return { bg:'#2d3748', fg:'#ffffff' };
@@ -4933,8 +4938,7 @@ function printSchedule() {
       return 'background:#fed7aa;color:#000';
     // Mohs variants — each visually distinct
     if (n === 'VA-Mohs' || n === 'Mohs-Assist') return 'background:#fca5a5;color:#000'; // coral-red
-    if (n === 'Mohs')          return 'background:#c7d2dc;color:#000'; // steel blue-gray (was gray #e2e8f0)
-    if (n === 'FGP-Mohs')     return 'background:#a5b4fc;color:#000'; // periwinkle (was lavender)
+    if (n === 'Mohs')          return 'background:#c7d2dc;color:#000'; // steel blue-gray
     // Specialty clinics — spread across hue wheel
     if (n === 'VVC')           return 'background:#5eead4;color:#000'; // teal (richer than before)
     if (n === 'SRV')           return 'background:#d1d5db;color:#000'; // mid-gray (distinct from RR)
@@ -4943,7 +4947,7 @@ function printSchedule() {
     if (n === 'Granulomatous') return 'background:#fdba74;color:#000'; // orange (distinct from Surg)
     if (n === 'BullousTexHair')return 'background:#6ee7b7;color:#000'; // vivid mint
     if (n === 'Vulvar')        return 'background:#fda4af;color:#000'; // rose (distinct from Peds)
-    if (n === 'Laser-Ashinoff' || n === 'Laser-Schaffer' || n === 'VA-Laser')
+    if (n === 'VA-Laser')
       return 'background:#bae6fd;color:#000'; // light sky blue
     // ── Map for remaining named clinics ───────────────────────────────────
     const map = {
