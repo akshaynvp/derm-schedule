@@ -635,8 +635,19 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
 
 <script>
 // ── App version + Change Log ──────────────────────────────────────────────────
-const APP_VERSION = 'v4.042';
+const APP_VERSION = 'v4.043';
 const CHANGELOG = [
+  { ver:'v4.043', date:'Sep 18', area:'BV schedule overhaul + distribution categories', tags:['rule','feat'],
+    notes:[
+      'BV Tue PM: SOC, Kakpovbia, Hazan added as independent toggleOff slots (tmax removed — all sessions now uncapped).',
+      'BV Wed AM: Ulcer removed; Gomez-Arias added as independent toggleOff (first-year surgery).',
+      'BV Wed PM: JoeAkintilo renamed to Joe throughout (norm, CLINIC_LABEL, CLINIC_SLOTS, SITE_CONFIG).',
+      'BV Thu AM: Nail moved out (was toggleOff here); BV Thu PM: Nail added as toggleOff, M/MC renamed Main/MC.',
+      'Clinic Distribution — Surgery column: now includes Anolik, Bae, Gomez-Arias, Hazan, Nail, Ostad, Quintana in addition to Surg/SSurg-prefix keys.',
+      'Clinic Distribution — new Procedural cluster (Brauer, Franks, Joe, Kakpovbia, SOC) with purple Proc Total column.',
+      'norm(): SSurg-Hazan→SSurg-H alias removed (VA uses SSurg-H directly); M/MC→Main/MC backward-compat alias added.',
+      'New canonical keys: Hazan, Gomez-Arias, Kakpovbia, Joe, Main/MC added to CLINIC_LABEL and CLINIC_SLOTS.',
+    ]},
   { ver:'v4.042', date:'Sep 16', area:'VA clinic renames + FGP-Mohs merge', tags:['rule','feat'],
     notes:[
       'VA Tue PM: Laser-Ashinoff renamed to Laser. VA Thu PM: Laser-Schaffer renamed to Laser. Both are now the canonical Laser key; old names kept as norm() aliases for backward compat.',
@@ -916,19 +927,20 @@ const SITE_CONFIG = {
   BV: {
     hasShadow: false,
     REQ: {
-      Mon_AM: { tmin:3, tmax:6, fixed:{},
+      Mon_AM: { tmin:3, tmax:null, fixed:{},
                 toggleOff:{Hair:1,Anolik:1,Quintana:1}, mainMin:3 },
-      Mon_PM: { tmin:5, tmax:5, fixed:{Granulomatous:1,Brauer:1}, mainMin:3 },
-      Tue_AM: { tmin:6, tmax:6, fixed:{Peds:2,Bae:1}, mainMin:3 },
-      Tue_PM: { tmin:5, tmax:5, fixed:{Peds:2}, mainMin:3 },
-      Wed_AM: { tmin:3, tmax:7, fixed:{},
-                toggleOff:{Lymph:1,Ostad:1,Franks:1,Ulcer:1}, mainMin:3 },
-      Wed_PM: { tmin:5, tmax:5, fixed:{BullousTexHair:1,JoeAkintilo:1}, mainMin:3 },
-      Thu_AM: { tmin:6, tmax:7, fixed:{Vulvar:1,CT:2,Surg:1},
+      Mon_PM: { tmin:5, tmax:null, fixed:{Granulomatous:1,Brauer:1}, mainMin:3 },
+      Tue_AM: { tmin:6, tmax:null, fixed:{Peds:2,Bae:1}, mainMin:3 },
+      Tue_PM: { tmin:5, tmax:null, fixed:{Peds:2},
+                toggleOff:{SOC:1,Kakpovbia:1,Hazan:1}, mainMin:3 },
+      Wed_AM: { tmin:3, tmax:null, fixed:{},
+                toggleOff:{Lymph:1,Ostad:1,Franks:1,'Gomez-Arias':1}, mainMin:3 },
+      Wed_PM: { tmin:5, tmax:null, fixed:{BullousTexHair:1,Joe:1}, mainMin:3 },
+      Thu_AM: { tmin:6, tmax:null, fixed:{Vulvar:1,CT:2,Surg:1}, mainMin:2 },
+      Thu_PM: { tmin:5, tmax:null, fixed:{SRV:1,SOC:1,'Main/MC':1},
                 toggleOff:{Nail:1}, mainMin:2 },
-      Thu_PM: { tmin:5, tmax:5, fixed:{SRV:1,SOC:1,'M/MC':1}, mainMin:2 },
-      Fri_AM: { tmin:5, tmax:5, fixed:{LegUlcer:1,Mohs:1}, mainMin:3 },
-      Fri_PM: { tmin:1, tmax:1, fixed:{Mohs:1}, noMain:true },
+      Fri_AM: { tmin:5, tmax:null, fixed:{LegUlcer:1,Mohs:1}, mainMin:3 },
+      Fri_PM: { tmin:1, tmax:null, fixed:{Mohs:1}, noMain:true },
     },
     SHADOW_WHEN: {},
   },
@@ -1007,17 +1019,18 @@ const CLINIC_LABEL = {
   Orlow:'Orlow', Flamm:'Flamm', Laser:'Laser',
   // BV
   Hair:'Hair', Granulomatous:'Gran',
-  // BV SSurg short names (new canonical keys)
-  Anolik:'Anolik', Brauer:'Brauer', Bae:'Bae', JoeAkintilo:'Joe/Akintilo',
+  // BV attending short-name canonical keys
+  Anolik:'Anolik', Brauer:'Brauer', Bae:'Bae', Joe:'Joe',
   SOC:'SOC', Quintana:'Quintana', Franks:'Franks', Ostad:'Ostad', Nail:'Nail',
-  // BV SSurg legacy labels (old keys kept for backward compat)
+  Hazan:'Hazan', 'Gomez-Arias':'Gomez-Arias', Kakpovbia:'Kakpovbia',
+  // BV legacy labels (old keys kept for backward compat)
   'SSurg-Brauer':'Brauer', 'SSurg-Bae':'Bae', 'SSurg-Anolik':'Anolik', 'SSurg-Quintana':'Quintana',
-  'SSurg-JoeAkintilo':'Joe/Akintilo', 'Surg-Criscito':'Surg',
+  'SSurg-JoeAkintilo':'Joe', 'Surg-Criscito':'Surg',
   'SSurg-Nail':'Nail', 'SSurg-SOC':'SOC', 'SSurg-Ostad':'Ostad', 'SSurg-Franks':'Franks',
   BullousTexHair:'Bullous/TH',
   Vulvar:'Vulvar', CT:'CT', SRV:'SRV',
   Mohs:'Mohs', 'Mohs-Assist':'Mohs Assist', Ulcer:'Ulcer',
-  'M/MC':'M/MC',
+  'Main/MC':'Main/MC',
   // VA
   VVC:'VVC', 'SSurg-W':'SSurg-W', 'SSurg-H':'SSurg-H',
   'SSurg-Hale':'SSurg-Hale',
@@ -1032,12 +1045,13 @@ const CLINIC_SLOTS = new Set([
   'Lymph','PLS','Peds','PPAC','CT_Caplan','CT_Mazori','FGP_Lee','Gomez','Washburn','Laser',
   'Geronemus','Orlow','Flamm','Cohen','Stein',
   'Hair','Granulomatous',
-  // BV SSurg new canonical short-name keys
-  'Anolik','Brauer','Bae','JoeAkintilo','SOC','Quintana','Franks','Ostad','Nail',
-  // BV SSurg legacy keys (norm() maps these to short names so counts land on new keys)
+  // BV attending canonical short-name keys
+  'Anolik','Brauer','Bae','Joe','SOC','Quintana','Franks','Ostad','Nail',
+  'Hazan','Gomez-Arias','Kakpovbia',
+  // BV legacy keys (norm() maps these to canonical keys)
   'SSurg-Brauer','SSurg-Bae','SSurg-Anolik','SSurg-Quintana',
   'BullousTexHair','SSurg-JoeAkintilo','Vulvar','CT',
-  'SSurg-Nail','SRV','SSurg-SOC','Mohs','Mohs-Assist','SSurg-Ostad','SSurg-Franks','Ulcer','M/MC',
+  'SSurg-Nail','SRV','SSurg-SOC','Mohs','Mohs-Assist','SSurg-Ostad','SSurg-Franks','Ulcer','Main/MC',
   'VVC','SSurg-W','SSurg-H','SSurg-Hale','SSurg-Karen',
   'SSurg-Lee','VA-Mohs','VA-Laser',
 ]);
@@ -1497,7 +1511,7 @@ function norm(v) {
   if (v === 'SSurg-Anolik')   return 'Anolik';
   if (v === 'SSurg-Brauer')   return 'Brauer';
   if (v === 'SSurg-Bae')      return 'Bae';
-  if (['SSurg-Joe/Akintilo','SSurg-Joe/Aki','SSurg-JoeAkintilo','Joe','Akintilo'].includes(v)) return 'JoeAkintilo';
+  if (['SSurg-Joe/Akintilo','SSurg-Joe/Aki','SSurg-JoeAkintilo','JoeAkintilo','Akintilo'].includes(v)) return 'Joe';
   if (v === 'SSurg-SOC')      return 'SOC';
   if (v === 'SSurg-Quintana') return 'Quintana';
   if (v === 'Surg-Criscito')  return 'Surg';   // becomes generic Surg
@@ -1515,7 +1529,7 @@ function norm(v) {
   if (['VA-Mohs','VA Mohs','VAMohs'].includes(v)) return 'VA-Mohs';
   if (v === 'FGP-Mohs') return 'Mohs';
   if (v === 'SSurg-Whitlow') return 'SSurg-W';
-  if (v === 'SSurg-Hazan')   return 'SSurg-H';
+  if (v === 'M/MC')          return 'Main/MC';
   if (['Conf','Conference','conf','conference'].includes(v)) return 'Conf';
   if (['Elective','elective'].includes(v)) return 'Elective';
   return v;
@@ -4152,20 +4166,27 @@ function buildClinicTracker() {
   // ── 2. Peds (sits between specialty and surgical) ────────────────────────────
   const pedsCols = ['Peds'].filter(c => clinicSet.has(c));
 
-  // ── 3. Surgical cluster — generic-first, Surg before SSurg, then A-Z ─────────
+  // ── 3. Surgical cluster — generic keys first, then named surgery attendings A-Z ──
+  const SURG_SHORT = new Set(['Anolik','Bae','Gomez-Arias','Hazan','Nail','Ostad','Quintana']);
   const surgCols = all
-    .filter(c => c === 'Surg' || c === 'SSurg' || c.startsWith('Surg-') || c.startsWith('SSurg-'))
+    .filter(c => c === 'Surg' || c === 'SSurg' || c.startsWith('Surg-') || c.startsWith('SSurg-') || SURG_SHORT.has(c))
     .sort((a,b) => {
-      const aS = a === 'Surg' || a.startsWith('Surg-');
-      const bS = b === 'Surg' || b.startsWith('Surg-');
-      if (aS !== bS) return aS ? -1 : 1;
+      const aGen = a === 'Surg' || a === 'SSurg' || a.startsWith('Surg-') || a.startsWith('SSurg-');
+      const bGen = b === 'Surg' || b === 'SSurg' || b.startsWith('Surg-') || b.startsWith('SSurg-');
+      if (aGen !== bGen) return aGen ? -1 : 1;  // generic keys first
       if (a === 'Surg' || a === 'SSurg') return -1;
       if (b === 'Surg' || b === 'SSurg') return 1;
       return a < b ? -1 : 1;
     });
 
-  // ── 4. M/MC sits immediately right of Main; rest of Mohs cluster after surgical ─
-  const mmcCols  = ['M/MC'].filter(c => clinicSet.has(c));
+  // ── 3b. Procedural cluster — Brauer, Franks, Joe, Kakpovbia, SOC ─────────────
+  const PROC_KEYS = new Set(['Brauer','Franks','Joe','Kakpovbia','SOC']);
+  const procCols = all
+    .filter(c => PROC_KEYS.has(c))
+    .sort((a,b) => displayLabel(a) < displayLabel(b) ? -1 : 1);
+
+  // ── 4. Main/MC sits immediately right of Main; rest of Mohs cluster after surgical ─
+  const mmcCols  = ['Main/MC'].filter(c => clinicSet.has(c));
   const mohsCols = ['VA-Mohs','Mohs','Mohs-Assist'].filter(c => clinicSet.has(c));
 
   // ── 5. Laser — VA-Laser / Laser ────────────
@@ -4188,7 +4209,7 @@ function buildClinicTracker() {
   // CT, LegUlcer are NOT in bucketedSet → they sort into specialty.
   // laserCols are bucketed so they don't also appear in specialty A-Z.
   const bucketedSet = new Set([
-    ...mainCols, ...mmcCols, ...pedsCols, ...surgCols, ...mohsCols,
+    ...mainCols, ...mmcCols, ...pedsCols, ...surgCols, ...procCols, ...mohsCols,
     ...laserCols, ...vvcCols, ...shadowCols,
   ]);
   const specialtyCols = all
@@ -4197,19 +4218,21 @@ function buildClinicTracker() {
 
   // ── Sentinels for cluster-total columns ──────────────────────────────────────
   const SURG_TOT       = '__SURG_TOT__';
+  const PROC_TOT       = '__PROC_TOT__';
   const LASER_TOT      = '__LASER_TOT__';
   const MOHS_TOT       = '__MOHS_TOT__';
-  const totalSentinels = new Set([SURG_TOT, LASER_TOT, MOHS_TOT]);
+  const totalSentinels = new Set([SURG_TOT, PROC_TOT, LASER_TOT, MOHS_TOT]);
 
   // ── Final column order ────────────────────────────────────────────────────────
   const clinics = [
     ...mainCols,
     ...vvcCols,         // VVC next to Main
-    ...mmcCols,         // M/MC after Main+VVC group
+    ...mmcCols,         // Main/MC after Main+VVC group
     ...specialtyCols,   // CT, LegUlcer sort in here A-Z
     ...pedsCols,
     ...(surgCols.length  ? [...surgCols,  SURG_TOT]  : []),
-    ...(laserCols.length ? [...laserCols, LASER_TOT] : []),  // Laser next to Surg Total
+    ...(procCols.length  ? [...procCols,  PROC_TOT]  : []),  // Procedural next to Surg Total
+    ...(laserCols.length ? [...laserCols, LASER_TOT] : []),  // Laser next to Proc Total
     ...(mohsCols.length  ? [...mohsCols,  MOHS_TOT]  : []),  // Mohs next to Laser Total
     ...shadowCols,
   ];
@@ -4235,15 +4258,17 @@ function buildClinicTracker() {
   }
   // Max for total sentinel columns (sum across each cluster)
   colMax[SURG_TOT]  = Math.max(1, ...residents.map(r => surgCols.reduce( (s,c) => s + (counts[r]?.[c] || 0), 0)));
+  colMax[PROC_TOT]  = Math.max(1, ...residents.map(r => procCols.reduce( (s,c) => s + (counts[r]?.[c] || 0), 0)));
   colMax[LASER_TOT] = Math.max(1, ...residents.map(r => laserCols.reduce((s,c) => s + (counts[r]?.[c] || 0), 0)));
   colMax[MOHS_TOT]  = Math.max(1, ...residents.map(r => mohsCols.reduce( (s,c) => s + (counts[r]?.[c] || 0), 0)));
 
   // Separator logic: before first column of each group
   const sepBefore = new Set([
-    mmcCols[0],        // M/MC (separator after Main+VVC group)
+    mmcCols[0],        // Main/MC (separator after Main+VVC group)
     specialtyCols[0],  // Specialty group start
     pedsCols[0],       // Peds
     surgCols[0],       // Surgical cluster start
+    procCols[0],       // Procedural cluster start
     laserCols[0],      // Laser cluster start
     mohsCols[0],       // Mohs cluster start
     shadowCols[0],     // Shadow
@@ -4261,6 +4286,10 @@ function buildClinicTracker() {
     // Synthetic total columns
     if (c === SURG_TOT) {
       thead += `<th style="${TH_BASE}background:#c05621;color:#fff;border-left:3px solid #fff;font-style:italic">Surg<br>Total</th>`;
+      continue;
+    }
+    if (c === PROC_TOT) {
+      thead += `<th style="${TH_BASE}background:#805ad5;color:#fff;border-left:3px solid #fff;font-style:italic">Proc<br>Total</th>`;
       continue;
     }
     if (c === LASER_TOT) {
@@ -4317,6 +4346,14 @@ function buildClinicTracker() {
         const t = n > 0 ? (0.3 + (n / colMax[SURG_TOT]) * 0.7) : 0;
         const bg = n > 0 ? `rgba(192,86,33,${t.toFixed(2)})` : '';
         const fg = t > 0.5 ? '#fff' : (n > 0 ? '#7b341e' : '#cbd5e0');
+        tbody += `<td style="${TD_BASE}${border}background:${bg};color:${fg};font-weight:${n>0?'700':'400'};font-style:italic">${n||'–'}</td>`;
+        continue;
+      }
+      if (c === PROC_TOT) {
+        const n = procCols.reduce((s, k) => s + (counts[r]?.[k] || 0), 0);
+        const t = n > 0 ? (0.3 + (n / colMax[PROC_TOT]) * 0.7) : 0;
+        const bg = n > 0 ? `rgba(128,90,213,${t.toFixed(2)})` : '';
+        const fg = t > 0.5 ? '#fff' : (n > 0 ? '#553c9a' : '#cbd5e0');
         tbody += `<td style="${TD_BASE}${border}background:${bg};color:${fg};font-weight:${n>0?'700':'400'};font-style:italic">${n||'–'}</td>`;
         continue;
       }
@@ -4412,7 +4449,7 @@ function cellColor(rawVal) {
   if (n === 'Bullous')                               return { bg:'#9ae6b4', fg:'#1a4731' };
   if (raw.includes('consult') || n === 'Consult')    return { bg:'#bfdbfe', fg:'#1d4ed8' };
   // All Surg/SSurg variants — generic, named attendings, and renamed BV short names
-  const _SSURG_SHORT = new Set(['Anolik','Brauer','Bae','JoeAkintilo','SOC','Quintana','Franks','Ostad','Nail']);
+  const _SSURG_SHORT = new Set(['Anolik','Brauer','Bae','Joe','SOC','Quintana','Franks','Ostad','Nail','Hazan','Gomez-Arias']);
   if (n === 'Surg' || n === 'SSurg' ||
       (n && (n.startsWith('Surg-') || n.startsWith('SSurg-'))) ||
       _SSURG_SHORT.has(n))
@@ -4420,7 +4457,7 @@ function cellColor(rawVal) {
   // Mohs variants
   if (n === 'VA-Mohs' || n === 'Mohs-Assist')       return { bg:'#fc8181', fg:'#7b341e' };
   if (n === 'Mohs')                                  return { bg:'#e2e8f0', fg:'#2d3748' };
-  if (n === 'M/MC')                                  return { bg:'#fbb6ce', fg:'#702459' }; // Main+Mohs Consult hybrid
+  if (n === 'Main/MC')                               return { bg:'#fbb6ce', fg:'#702459' }; // Main+Mohs Consult hybrid
   // BV/VA specialty clinics
   if (n === 'VVC')                                   return { bg:'#4fd1c5', fg:'#1a202c' };
   if (n === 'SRV')                                   return { bg:'#a0aec0', fg:'#1a202c' };
@@ -4933,7 +4970,7 @@ function printSchedule() {
     // Consult — bright sky blue (was pale #bfdbfe, now vivid)
     if (raw.includes('consult') || n === 'Consult') return 'background:#7dd3fc;color:#000';
     // Surgery variants — warm peach-orange (includes renamed BV SSurg short names)
-    const _SSURG_SHORT_PRINT = new Set(['Anolik','Brauer','Bae','JoeAkintilo','SOC','Quintana','Franks','Ostad','Nail']);
+    const _SSURG_SHORT_PRINT = new Set(['Anolik','Brauer','Bae','Joe','SOC','Quintana','Franks','Ostad','Nail','Hazan','Gomez-Arias']);
     if ((n && (n.startsWith('Surg-') || n.startsWith('SSurg-'))) || _SSURG_SHORT_PRINT.has(n))
       return 'background:#fed7aa;color:#000';
     // Mohs variants — each visually distinct
