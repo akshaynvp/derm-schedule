@@ -635,8 +635,16 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
 
 <script>
 // ── App version + Change Log ──────────────────────────────────────────────────
-const APP_VERSION = 'v4.043';
+const APP_VERSION = 'v4.044';
 const CHANGELOG = [
+  { ver:'v4.044', date:'Oct 7', area:'BV clinic colors + Capacity Check patient input', tags:['ui','fix'],
+    notes:[
+      'cellColor(): Gomez-Arias now renders deep burnt orange (#dd6b20) — distinct from standard surgery, indicating first-year clinic.',
+      'cellColor(): Kakpovbia added to _SSURG_SHORT — now renders standard surgery/procedural orange (#f6ad55).',
+      'cs() print: same changes — Gomez-Arias deep orange (#fb923c), Kakpovbia added to procedural peach-orange.',
+      'Capacity Check: BVMain removed from capNoCount() — patient count input now available for BV Main clinic.',
+      'Capacity Check: BVMain label displays as "Main" (not "BV-Main") within the Capacity Check tab.',
+    ]},
   { ver:'v4.043', date:'Sep 18', area:'BV schedule overhaul + distribution categories', tags:['rule','feat'],
     notes:[
       'BV Tue PM: SOC, Kakpovbia, Hazan added as independent toggleOff slots (tmax removed — all sessions now uncapped).',
@@ -2235,7 +2243,6 @@ let G_capCollapsed = new Set(); // ISOs of collapsed day cards
 // Clinics shown in capacity check but with no patient-count input
 function capNoCount(clinic) {
   if (clinic === 'Oncoderm' || clinic === 'Photo') return true;
-  if (clinic === 'BVMain') return true;
   if (G_activeSite === 'VA' && clinic === 'Main') return true;
   return false;
 }
@@ -2507,7 +2514,7 @@ function buildCapacityCheck() {
                 : `<span style="color:#276749;font-weight:700;font-size:.85rem">✓</span>`;
 
             const cc = cellColor(clinic);
-            const labelTxt = CLINIC_LABEL[clinic] || clinic;
+            const labelTxt = (clinic === 'BVMain') ? 'Main' : (CLINIC_LABEL[clinic] || clinic);
             const dimStyle = !active ? ';opacity:0.38' : '';
             const clinicBadge = cc
               ? `<span style="background:${cc.bg};color:${cc.fg};border-radius:3px;padding:1px 6px;font-size:.72rem;font-weight:600${dimStyle}">${labelTxt}</span>`
@@ -4448,8 +4455,10 @@ function cellColor(rawVal) {
   if (n === 'Oncoderm' || n === 'Gomez' || n === 'Washburn') return { bg:'#9f7aea', fg:'#ffffff' };
   if (n === 'Bullous')                               return { bg:'#9ae6b4', fg:'#1a4731' };
   if (raw.includes('consult') || n === 'Consult')    return { bg:'#bfdbfe', fg:'#1d4ed8' };
+  // Gomez-Arias — first-year surgery clinic: deep burnt orange (distinct from standard surgery)
+  if (n === 'Gomez-Arias')                           return { bg:'#dd6b20', fg:'#ffffff' };
   // All Surg/SSurg variants — generic, named attendings, and renamed BV short names
-  const _SSURG_SHORT = new Set(['Anolik','Brauer','Bae','Joe','SOC','Quintana','Franks','Ostad','Nail','Hazan','Gomez-Arias']);
+  const _SSURG_SHORT = new Set(['Anolik','Brauer','Bae','Joe','SOC','Quintana','Franks','Ostad','Nail','Hazan','Kakpovbia']);
   if (n === 'Surg' || n === 'SSurg' ||
       (n && (n.startsWith('Surg-') || n.startsWith('SSurg-'))) ||
       _SSURG_SHORT.has(n))
@@ -4970,7 +4979,8 @@ function printSchedule() {
     // Consult — bright sky blue (was pale #bfdbfe, now vivid)
     if (raw.includes('consult') || n === 'Consult') return 'background:#7dd3fc;color:#000';
     // Surgery variants — warm peach-orange (includes renamed BV SSurg short names)
-    const _SSURG_SHORT_PRINT = new Set(['Anolik','Brauer','Bae','Joe','SOC','Quintana','Franks','Ostad','Nail','Hazan','Gomez-Arias']);
+    if (n === 'Gomez-Arias') return 'background:#fb923c;color:#000'; // first-year surgery — deep orange
+    const _SSURG_SHORT_PRINT = new Set(['Anolik','Brauer','Bae','Joe','SOC','Quintana','Franks','Ostad','Nail','Hazan','Kakpovbia']);
     if ((n && (n.startsWith('Surg-') || n.startsWith('SSurg-'))) || _SSURG_SHORT_PRINT.has(n))
       return 'background:#fed7aa;color:#000';
     // Mohs variants — each visually distinct
