@@ -635,8 +635,16 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
 
 <script>
 // ── App version + Change Log ──────────────────────────────────────────────────
-const APP_VERSION = 'v4.044';
+const APP_VERSION = 'v4.045';
 const CHANGELOG = [
+  { ver:'v4.045', date:'Oct 8', area:'Capacity Check resident count + BV Thu PM Main/MC rule', tags:['fix','rule'],
+    notes:[
+      'Capacity Check: resCount() now aliases Main → BVMain for BV site — BV residents scheduled as "Main" are correctly counted in the capacity table.',
+      'norm(): Main/MC and M/MC now map → "Main" (like Main/Con), counting toward mainMin.',
+      'BV Thu PM: mainMin raised 2 → 3. Satisfied by 2 Main + 1 M/MC (when active) or 3 plain Main (when M/MC cancelled).',
+      'cellColor() + cs(): Main/MC pink color preserved via raw check (same technique as Main/Con teal).',
+      'Main/MC column removed from Clinic Distribution — assignments now fold into the Main column.',
+    ]},
   { ver:'v4.044', date:'Oct 7', area:'BV clinic colors + Capacity Check patient input', tags:['ui','fix'],
     notes:[
       'cellColor(): Gomez-Arias now renders deep burnt orange (#dd6b20) — distinct from standard surgery, indicating first-year clinic.',
@@ -946,7 +954,7 @@ const SITE_CONFIG = {
       Wed_PM: { tmin:5, tmax:null, fixed:{BullousTexHair:1,Joe:1}, mainMin:3 },
       Thu_AM: { tmin:6, tmax:null, fixed:{Vulvar:1,CT:2,Surg:1}, mainMin:2 },
       Thu_PM: { tmin:5, tmax:null, fixed:{SRV:1,SOC:1,'Main/MC':1},
-                toggleOff:{Nail:1}, mainMin:2 },
+                toggleOff:{Nail:1}, mainMin:3 },
       Fri_AM: { tmin:5, tmax:null, fixed:{LegUlcer:1,Mohs:1}, mainMin:3 },
       Fri_PM: { tmin:1, tmax:null, fixed:{Mohs:1}, noMain:true },
     },
@@ -1537,7 +1545,7 @@ function norm(v) {
   if (['VA-Mohs','VA Mohs','VAMohs'].includes(v)) return 'VA-Mohs';
   if (v === 'FGP-Mohs') return 'Mohs';
   if (v === 'SSurg-Whitlow') return 'SSurg-W';
-  if (v === 'M/MC')          return 'Main/MC';
+  if (v === 'Main/MC' || v === 'M/MC') return 'Main'; // counts toward Main like Main/Con
   if (['Conf','Conference','conf','conference'].includes(v)) return 'Conf';
   if (['Elective','elective'].includes(v)) return 'Elective';
   return v;
@@ -2270,7 +2278,9 @@ function _capAllClinics(iso, sess) {
     let n = 0;
     for (const [r, v] of Object.entries(asgn)) {
       if (!r || r.startsWith('FLEX')) continue;
-      if (norm(v) === clinic) n++;
+      const nv = norm(v);
+      // BV residents are scheduled as 'Main'; count them toward the BVMain capacity slot
+      if (nv === clinic || (clinic === 'BVMain' && nv === 'Main')) n++;
     }
     return n;
   }
@@ -4448,6 +4458,7 @@ function cellColor(rawVal) {
   if (n === 'RR')                                    return { bg:'#e2e8f0', fg:'#4a5568' };
   if (n === 'Admin')                                 return { bg:'#e9d8fd', fg:'#553c9a' };
   if (raw === 'main/con' || raw === 'main/contact')  return { bg:'#76e4f7', fg:'#065666' };
+  if (raw === 'main/mc'  || raw === 'm/mc')          return { bg:'#fbb6ce', fg:'#702459' }; // Main/MC hybrid — pink
   if (n === 'Main')                                  return { bg:'#ffffff', fg:'#1a202c' };
   if (n === 'BVMain')                                return { bg:'#facc15', fg:'#000000', border:'2px solid #78350f' };
   if (raw === 'vac' || raw === 'vacation')           return { bg:'#bee3f8', fg:'#2b6cb0' };
@@ -4466,7 +4477,6 @@ function cellColor(rawVal) {
   // Mohs variants
   if (n === 'VA-Mohs' || n === 'Mohs-Assist')       return { bg:'#fc8181', fg:'#7b341e' };
   if (n === 'Mohs')                                  return { bg:'#e2e8f0', fg:'#2d3748' };
-  if (n === 'Main/MC')                               return { bg:'#fbb6ce', fg:'#702459' }; // Main+Mohs Consult hybrid
   // BV/VA specialty clinics
   if (n === 'VVC')                                   return { bg:'#4fd1c5', fg:'#1a202c' };
   if (n === 'SRV')                                   return { bg:'#a0aec0', fg:'#1a202c' };
@@ -4974,6 +4984,7 @@ function printSchedule() {
     const n = norm(val), raw = String(val).trim().toLowerCase();
     // ── Core clinic types ──────────────────────────────────────────────────
     if (raw === 'main/con' || raw === 'main/contact') return 'background:#76e4f7;color:#000';
+    if (raw === 'main/mc'  || raw === 'm/mc')         return 'background:#fbb6ce;color:#000'; // Main/MC hybrid — pink
     if (n === 'Main'   || raw === 'main')   return 'background:#ffffff;color:#000';
     if (n === 'BVMain' || raw === 'bvmain') return 'background:#facc15;color:#000';
     // Consult — bright sky blue (was pale #bfdbfe, now vivid)
