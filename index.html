@@ -635,8 +635,13 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
 
 <script>
 // ── App version + Change Log ──────────────────────────────────────────────────
-const APP_VERSION = 'v4.046';
+const APP_VERSION = 'v4.047';
 const CHANGELOG = [
+  { ver:'v4.047', date:'Nov 15', area:'RR tracker: Path/Vac label refinement', tags:['ui'],
+    notes:[
+      'RR tracker: absence label shown only for Path and Vac weeks (not QI, Conf, Mohs, etc.).',
+      'RR count always included in parens alongside the label — e.g. "path (1)" — to reflect partial-absence weeks.',
+    ]},
   { ver:'v4.046', date:'Nov 15', area:'BV slot revisions + CC date fix + RR absence labels', tags:['rule','fix','ui'],
     notes:[
       'BV Tue PM: removed SOC from toggleOff (Kakpovbia + Hazan remain).',
@@ -645,7 +650,7 @@ const CHANGELOG = [
       'BV Thu AM: removed Surg from fixed slots — now Vulvar + 2×CT only (mainMin stays 2).',
       'CC calendar: schedule ISO generation now uses local date components to avoid UTC offset date-shift for UTC+ timezones.',
       'CC calendar: academic-year fix enhanced — detects non-monotonic (backward) date sequences in CC.xlsx to robustly handle year-wrap regardless of first-column month.',
-      'RR tracker: cells now show the notable-absence label (e.g. "path", "vac", "qi") instead of an RR count when a resident has a notable absence that week.',
+      'RR tracker: Path/Vac weeks show absence label with RR count in parens; initial implementation.',
     ]},
   { ver:'v4.045', date:'Oct 8', area:'Capacity Check resident count + BV Thu PM Main/MC rule', tags:['fix','rule'],
     notes:[
@@ -2805,10 +2810,12 @@ function buildRRTracker() {
       else if (atLim)  { tdBg = 'background:#276749;'; spanStyle = 'color:#fff;font-weight:700'; }
       else if (low)    { tdBg = 'background:#c6f6d5;'; spanStyle = 'color:#276749;font-weight:600'; }
       else if (zero)   { tdBg = 'background:#fed7d7;'; spanStyle = 'color:#c53030'; }
-      // If resident has a notable absence this week, show its label instead of RR count
-      if (absence) {
+      // For Path/Vac weeks: show label + RR count in parens; all other cells show count normally
+      const showAbsLabel = absence === 'Path' || absence === 'Vac';
+      if (showAbsLabel) {
         const absLabel = absence.toLowerCase();
-        rowCells += `<td class="wsep" style="background:#edf2f7;text-align:center"><span style="font-size:.7rem;color:#4a5568;font-style:italic">${absLabel}</span></td>`;
+        const rrPart = cnt ? ` (${cnt})` : '';
+        rowCells += `<td class="wsep" style="background:#edf2f7;text-align:center"><span style="font-size:.7rem;color:#4a5568;font-style:italic">${absLabel}${rrPart}</span></td>`;
       } else {
         rowCells += `<td class="wsep" style="${tdBg}">${
           (cnt || lim !== null)
