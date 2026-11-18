@@ -635,8 +635,13 @@ tbody tr.totals-row td { background: #edf2f7; font-weight: 700; border-top: 2px 
 
 <script>
 // ── App version + Change Log ──────────────────────────────────────────────────
-const APP_VERSION = 'v4.047';
+const APP_VERSION = 'v4.048';
 const CHANGELOG = [
+  { ver:'v4.048', date:'Nov 18', area:'RR tracker: absence tag appended to count', tags:['ui'],
+    notes:[
+      'RR tracker: reverted label-first approach. Cells now always show the numeric RR count with normal coloring.',
+      'For Path, Vac, Conf, and Elective weeks, the absence type appears as a small italic suffix in parens — e.g. "2 (vac)". Mohs, QI, Exam, etc. show count only.',
+    ]},
   { ver:'v4.047', date:'Nov 15', area:'RR tracker: Path/Vac label refinement', tags:['ui'],
     notes:[
       'RR tracker: absence label shown only for Path and Vac weeks (not QI, Conf, Mohs, etc.).',
@@ -2810,18 +2815,15 @@ function buildRRTracker() {
       else if (atLim)  { tdBg = 'background:#276749;'; spanStyle = 'color:#fff;font-weight:700'; }
       else if (low)    { tdBg = 'background:#c6f6d5;'; spanStyle = 'color:#276749;font-weight:600'; }
       else if (zero)   { tdBg = 'background:#fed7d7;'; spanStyle = 'color:#c53030'; }
-      // For Path/Vac weeks: show label + RR count in parens; all other cells show count normally
-      const showAbsLabel = absence === 'Path' || absence === 'Vac';
-      if (showAbsLabel) {
-        const absLabel = absence.toLowerCase();
-        const rrPart = cnt ? ` (${cnt})` : '';
-        rowCells += `<td class="wsep" style="background:#edf2f7;text-align:center"><span style="font-size:.7rem;color:#4a5568;font-style:italic">${absLabel}${rrPart}</span></td>`;
-      } else {
-        rowCells += `<td class="wsep" style="${tdBg}">${
-          (cnt || lim !== null)
-            ? `<span style="${spanStyle}">${cnt || '0'}${over ? '✗' : ''}</span>`
-            : '<span class="zero">–</span>'
-        }</td>`;
+      // Show RR count normally; append absence label in parens for Path/Vac/Conf/Elective
+      const RR_ABS_LABELS = new Set(['Path','Vac','Conf','Elective']);
+      const absTag = (absence && RR_ABS_LABELS.has(absence))
+        ? ` <span style="font-size:.65rem;font-style:italic;opacity:.8">(${absence.toLowerCase()})</span>` : '';
+      rowCells += `<td class="wsep" style="${tdBg}">${
+        (cnt || lim !== null)
+          ? `<span style="${spanStyle}">${cnt || '0'}${over ? '✗' : ''}${absTag}</span>`
+          : '<span class="zero">–</span>'
+      }</td>`;
       }
     }
     rrBody += `<tr><td>${resDisplay(r)}${lim!==null?`<span style="font-size:.7rem;color:var(--muted);margin-left:4px">(max ${lim}/wk)</span>`:''}</td>${rowCells}<td class="wsep" style="font-weight:600">${rowTotal||'<span class="zero">–</span>'}</td></tr>`;
